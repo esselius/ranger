@@ -463,9 +463,11 @@ public class LdapUserGroupBuilder implements UserGroupSource {
 				// Fix RANGER-1957: Perform full sync when there are updates to the groups or when incremental sync is not enabled
 				deltaSyncUserTime = 0;
 				deltaSyncUserTimeStamp = dateFormat.format(new Date(0));
+				extendedUserSearchFilter = "(objectclass=" + userObjectClass + ")";
+			} else {
+				extendedUserSearchFilter = "(objectclass=" + userObjectClass + ")(|(uSNChanged>=" + deltaSyncUserTime + ")(modifyTimestamp>=" + deltaSyncUserTimeStamp + "Z))";
 			}
 
-			extendedUserSearchFilter = "(objectclass=" + userObjectClass + ")(|(uSNChanged>=" + deltaSyncUserTime + ")(modifyTimestamp>=" + deltaSyncUserTimeStamp + "Z))";
 
 			if (userSearchFilter != null && !userSearchFilter.trim().isEmpty()) {
 				String customFilter = userSearchFilter.trim();
@@ -705,9 +707,12 @@ public class LdapUserGroupBuilder implements UserGroupSource {
 				// Perform full sync when incremental sync is not enabled
 				deltaSyncGroupTime = 0;
 				deltaSyncGroupTimeStamp = dateFormat.format(new Date(0));
+				extendedAllGroupsSearchFilter = extendedGroupSearchFilter;
+			} else {
+				extendedAllGroupsSearchFilter = "(&"  + extendedGroupSearchFilter + "(|(uSNChanged>=" + deltaSyncGroupTime + ")(modifyTimestamp>=" + deltaSyncGroupTimeStamp + "Z)))";
+
 			}
 
-			extendedAllGroupsSearchFilter = "(&"  + extendedGroupSearchFilter + "(|(uSNChanged>=" + deltaSyncGroupTime + ")(modifyTimestamp>=" + deltaSyncGroupTimeStamp + "Z)))";
 
 			LOG.info("extendedAllGroupsSearchFilter = " + extendedAllGroupsSearchFilter);
 			for (int ou=0; ou<groupSearchBase.length; ou++) {
